@@ -7,17 +7,18 @@
     android:layout_height="wrap_content"
     >
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_height="0dp"
-            android:layout_width="0dp"
-            app:layout_aspectRatio="100%"
-            app:layout_widthPercent="100%"
-            android:scaleType="centerCrop"
-            tools:ignore="MissingConstraints" />
 
-        <!--
-                    app:layout_aspectRatio="75%"
-        -->
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--
+                app:layout_aspectRatio="75%"
+    -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,6 @@
 package com.example.kittenstarter
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
@@ -16,7 +17,8 @@ import androidx.appcompat.app.AppCompatActivity
 
 import android.util.Log;
 import android.view.View;
-import android.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
+
 
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -24,19 +26,24 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.create
+import java.lang.Exception
 
 // INFO https://www.flickr.com/services/api/explore/flickr.photos.search
 
-class MainActivity : AppCompatActivity(), Callback<Result?>,
-    OnItemClickListener {
-    private var grid: GridView? = null
-    private var adapter: CursorAdapter? = null
-    private var helper: PhotosDBHelper? = null
-    private var retrofit: Retrofit? = null
-    private var service: FlickrService? = null
-    private var statement: SQLiteStatement? = null
+@Suppress("DEPRECATION")
+class MainActivity : AppCompatActivity(), Callback<Result>, OnItemClickListener {
+    private lateinit var grid: GridView
+    private lateinit var adapter: CursorAdapter
+    private lateinit var helper: PhotosDBHelper
+    private lateinit var retrofit: Retrofit
+    private lateinit var service: FlickrService
+    private lateinit var statement: SQLiteStatement
+
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
@@ -44,48 +51,54 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
         setContentView(R.layout.activity_main)
 
         // Сделаем тулбар
-        val bar: Toolbar = findViewById<View>(R.id.top_toolbar) as Toolbar
+        val bar = findViewById<View>(R.id.top_toolbar) as Toolbar
         setSupportActionBar(bar)
         supportActionBar!!.setDisplayShowTitleEnabled(true)
         supportActionBar!!.setDisplayHomeAsUpEnabled(false)
-        supportActionBar!!.setTitle("Kitten")
+        supportActionBar!!.title = "Kitten"
         grid = findViewById<View>(R.id.grid) as GridView
 
         // Чтобы скроллинг "вверх" грида вызывал
         // исчезновение тулбара.
-        grid!!.isNestedScrollingEnabled = true
+        grid.isNestedScrollingEnabled = true
+
         adapter = PhotoAdapter(this, null, 0)
         helper = PhotosDBHelper(this)
-        statement = helper.getWritableDatabase().compileStatement(sql)
-        grid!!.adapter = adapter
-        retrofit = Builder()
+
+        statement = helper.writableDatabase.compileStatement(sql)
+
+        grid.adapter = adapter
+
+        retrofit = Retrofit.Builder()
             .baseUrl("https://api.flickr.com")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         service = retrofit.create(FlickrService::class.java)
-        grid!!.onItemClickListener = this
-        grid!!.setOnScrollListener(object : AbsListView.OnScrollListener {
-            override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
-                if (!loading) {
-                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-                        val last = grid!!.lastVisiblePosition
-                        val total = grid!!.count
-                        if (total - last < threshold) {
-                            loadMore(currentPage + 1, term)
-                            Log.d("happy", "onScrollStateChanged")
-                        }
-                    }
-                }
-            }
 
-            override fun onScroll(
-                view: AbsListView,
-                firstVisibleItem: Int,
-                visibleItemCount: Int,
-                totalItemCount: Int
-            ) {
-            }
-        })
+
+//        grid!!.onItemClickListener = this
+//        grid!!.setOnScrollListener(object : AbsListView.OnScrollListener {
+//            override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
+//                if (!loading) {
+//                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+//                        val last = grid!!.lastVisiblePosition
+//                        val total = grid!!.count
+//                        if (total - last < threshold) {
+//                            loadMore(currentPage + 1, term)
+//                            Log.d("happy", "onScrollStateChanged")
+//                        }
+//                    }
+//                }
+//            }
+//
+//            override fun onScroll(
+//                view: AbsListView,
+//                firstVisibleItem: Int,
+//                visibleItemCount: Int,
+//                totalItemCount: Int
+//            ) {
+//            }
+//        })
 
         // Загрузить картинки
         startOver()
@@ -100,26 +113,27 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
     // Выполняется при старте приложения
     // или изменении поискового запроса
     private fun startOver() {
-        helper!!.writableDatabase.delete(
-            PhotosTable.TABLE_PHOTOS,
-            null,
-            null
-        )
+//        helper.writableDatabase.delete(
+//            PhotosTable.TABLE_PHOTOS,
+//            null,
+//            null
+//        )
 
-        // Начнем с первой страницы
+        // Начнём с первой страницы
         currentPage = 1
 
         // Загрузим
         loadMore(currentPage, term)
     }
 
-    // Исользуется для загрузки новой порции изобразений из сервиса
+    // Используется для загрузки новой порции изображений из сервиса
     // Вызов Retrofit
     private fun loadMore(page: Int, search: String) {
         loading = true
+
         val call: Call<Result> = service.search(
             "flickr.photos.search",
-            "7a8da45e81bb8153e93030525b30595b",
+            "1694c8371b676e2b1cf9000245f9b1f2",
             search,
             "json",
             1,
@@ -130,26 +144,32 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
 
     // Только один процесс загрузки данных с сервера
     private var loading = false
-    fun onResponse(call: Call<Result?>?, response: Response<Result?>) {
-        val result: Result = response.body()
-        if (result.getStat().equals("ok")) {
-            currentPage = result.getPhotos().getPage()
-            val photos: Photos = result.getPhotos()
-            val db: SQLiteDatabase = helper.getWritableDatabase()
+    override fun onResponse(call: Call<Result>, response: Response<Result>) {
+        val result = response.body()
+        if (result!!.stat.equals("ok")) {
+
+            currentPage = result.photos!!.page!!
+
+            val photos = result.photos
+
+            val db = helper.writableDatabase
             db.beginTransaction()
+
             try {
-                for (p in photos.getPhoto()) {
-                    // Log.d("happy", p.getTitle());
+                for (p in photos!!.photo!!) {
+//                Log.d("happySDK", p.title!!)
                     val url = createUrl(p)
                     // insert into photo (url) values (?)
-                    statement!!.bindString(1, url)
-                    statement!!.execute()
+                    statement.bindString(1, url)
+                    statement.execute()
                 }
                 db.setTransactionSuccessful()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
+
             } finally {
                 db.endTransaction()
             }
+
         }
         val cursor = photoCursor
         adapter.swapCursor(cursor)
@@ -157,7 +177,7 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
     }
 
     private val photoCursor: Cursor
-        private get() = helper!!.getReadableDatabase().query(
+        get() = helper.readableDatabase.query(
             PhotosTable.TABLE_PHOTOS,
             null,
             null,
@@ -167,14 +187,15 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
             null
         )
 
-    fun onFailure(call: Call<Result?>?, t: Throwable) {
-        Log.d("happy", t.message!!)
+    override fun onFailure(call: Call<Result?>, t: Throwable) {
+        Log.d("happySDK", t.message!!)
         loading = false
     }
 
+    @SuppressLint("Range")
     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val intent = Intent(this, Detail::class.java)
-        val cursor: Cursor = adapter.getCursor()
+        val cursor: Cursor = adapter.cursor
         cursor.moveToPosition(position)
         val url = cursor.getString(
             cursor.getColumnIndex(PhotosTable.COLUMN_URL)
@@ -187,12 +208,9 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
         // Константа для передачи URL в детальную Activity
         // через Intent
         const val IMAGE_URL = "IMAGE_URL"
-        private val sql = "  insert into   " +
-                PhotosTable.TABLE_PHOTOS +
-                "   (   " +
-                PhotosTable.COLUMN_URL +
-                "   )   " +
-                " values (  ?  ) ;  "
+
+        private const val sql =
+            "  insert into   ${PhotosTable.TABLE_PHOTOS}  (  ${PhotosTable.COLUMN_URL}  )  values  (  ?  )  ;  "
 
         // Порог
         // Если разница между крайним видимым элементом GridView и количеством
@@ -205,10 +223,10 @@ class MainActivity : AppCompatActivity(), Callback<Result?>,
             //Log.d("happy", url);
             return java.lang.String.format(
                 "https://farm%s.staticflickr.com/%s/%s_%s_q.jpg",
-                p.getFarm(),
-                p.getServer(),
-                p.getId(),
-                p.getSecret()
+                p.farm,
+                p.server,
+                p.id,
+                p.secret
             )
         }
     }

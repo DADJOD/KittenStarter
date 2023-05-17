@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 
-class PhotosDBHelper(context: Context?) :
+class PhotosDBHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_FILE, null, DATABASE_VERSION) {
     override fun onCreate(sqLiteDatabase: SQLiteDatabase) {
         PhotosTable.onCreate(sqLiteDatabase)

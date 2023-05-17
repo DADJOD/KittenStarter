@@ -14,6 +14,7 @@ import com.squareup.picasso.Picasso
 class PhotoAdapter(context: Context?, c: Cursor?, flags: Int) :
     CursorAdapter(context, c, flags) {
     // Для CursorAdapter эта функция вызывается для создания View
+    @SuppressLint("MissingInflatedId")
     override fun newView(context: Context, cursor: Cursor, parent: ViewGroup?): View {
         // View view = context.getLayoutInflater(
         val view: View = LayoutInflater.from(context).inflate(R.layout.item, parent, false)
