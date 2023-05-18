@@ -75,30 +75,30 @@ class MainActivity : AppCompatActivity(), Callback<Result>, OnItemClickListener 
             .build()
         service = retrofit.create(FlickrService::class.java)
 
+        grid.onItemClickListener
 
-//        grid!!.onItemClickListener = this
-//        grid!!.setOnScrollListener(object : AbsListView.OnScrollListener {
-//            override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
-//                if (!loading) {
-//                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-//                        val last = grid!!.lastVisiblePosition
-//                        val total = grid!!.count
-//                        if (total - last < threshold) {
-//                            loadMore(currentPage + 1, term)
-//                            Log.d("happy", "onScrollStateChanged")
-//                        }
-//                    }
-//                }
-//            }
-//
-//            override fun onScroll(
-//                view: AbsListView,
-//                firstVisibleItem: Int,
-//                visibleItemCount: Int,
-//                totalItemCount: Int
-//            ) {
-//            }
-//        })
+        grid.setOnScrollListener(object : AbsListView.OnScrollListener {
+            override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
+                if (!loading) {
+                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+                        val last = grid.lastVisiblePosition
+                        val total = grid.count
+                        if (total - last < threshold) {
+                            loadMore(currentPage + 1, term)
+                            Log.d("happy", "onScrollStateChanged")
+                        }
+                    }
+                }
+            }
+
+            override fun onScroll(
+                view: AbsListView,
+                firstVisibleItem: Int,
+                visibleItemCount: Int,
+                totalItemCount: Int,
+            ) {
+            }
+        })
 
         // Загрузить картинки
         startOver()
@@ -113,11 +113,11 @@ class MainActivity : AppCompatActivity(), Callback<Result>, OnItemClickListener 
     // Выполняется при старте приложения
     // или изменении поискового запроса
     private fun startOver() {
-//        helper.writableDatabase.delete(
-//            PhotosTable.TABLE_PHOTOS,
-//            null,
-//            null
-//        )
+        helper.writableDatabase.delete(
+            PhotosTable.TABLE_PHOTOS,
+            null,
+            null
+        )
 
         // Начнём с первой страницы
         currentPage = 1
@@ -193,9 +193,9 @@ class MainActivity : AppCompatActivity(), Callback<Result>, OnItemClickListener 
     }
 
     @SuppressLint("Range")
-    override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val intent = Intent(this, Detail::class.java)
-        val cursor: Cursor = adapter.cursor
+        val cursor = adapter.cursor
         cursor.moveToPosition(position)
         val url = cursor.getString(
             cursor.getColumnIndex(PhotosTable.COLUMN_URL)
